@@ -1,6 +1,16 @@
 const unitTestingTask = require("../unitTestingTask");
 
-describe("unit testing task", () => {
+// * a lack of coverage (can be checked by opening /coverage/index.html)
+// * failing tests when a different time zone is set on your computer.
+// * Try to use one "expect" per test.
+// * Test naming is usually an area to improve.
+//
+// Here you can find good naming examples using the "should" convention.
+// https://github.com/mawrkus/js-unit-testing-guide
+// You can also find "Given/When/Then" namings on your projects and if so you should be consistent with test names.
+// https://markus.oberlehner.net/blog/naming-your-unit-tests-it-should-vs-given-when-then/
+
+describe("unitTestingTask()", () => {
   const dateToFormatNight = "Mon Aug 15 2022 02:09:09:012 GMT+0200";
   const dateToFormatMorning = "Mon Aug 15 2022 09:09:09:012 GMT+0200";
   const dateToFormatAfternoon = "Mon Aug 15 2022 14:09:09:012 GMT+0200";
@@ -31,7 +41,7 @@ describe("unit testing task", () => {
     ),
     weekdaysShort: "ндз_пн_аўт_сер_чц_пт_сб".split("_"),
     weekdaysMin: "ндз_пн_аўт_сер_чц_пт_сб".split("_"),
-    meridiem: function (hour) {
+    function(hour) {
       if (hour < 4) {
         return "ночы";
       } else if (hour < 12) {
@@ -44,173 +54,210 @@ describe("unit testing task", () => {
     },
   };
 
-  test("it should throw an error when format and date did not provide", () => {
-    expect(() => unitTestingTask()).toThrow(Error);
+  it("should return formatted date when format and date were provided", () => {
+    expect(unitTestingTask(format, dateToFormatMorning)).toBe(formattedDate);
   });
 
-  test("it should throw an error when format did not provide and date provided", () => {
-    expect(() => unitTestingTask(_, dateToFormatMorning)).toThrow(Error);
+  describe("when format was not provided", () => {
+    it("should throw an error", () => {
+      expect(() => unitTestingTask(_, dateToFormatMorning)).toThrow(Error);
+    });
   });
 
-  test("it should throw an error when format provided and date did not provide", () => {
-    expect(() => unitTestingTask(format, {})).toThrow(Error);
+  describe("when a new formatting function was registered", () => {
+    it("should return formatted date according to new format", () => {
+      unitTestingTask.register("longDate", "d MMMM");
+      expect(unitTestingTask("longDate", dateToFormatMorning)).toEqual(
+        "15 August"
+      );
+    });
   });
 
-  test("it should return formatted date when format and date provided", () => {
-    expect(unitTestingTask(format, dateToFormatMorning)).toEqual(formattedDate);
-  });
-
-  test("it should return formatted date with custom formatting", () => {
-    unitTestingTask.register("longDate", "d MMMM");
-    expect(unitTestingTask("longDate", dateToFormatMorning)).toEqual(
-      "15 August"
-    );
-  });
-
-  describe("format date according to `format` string", () => {
-    test("it should return format string if it does not exist in tokens list", () => {
+  describe("when provided format was not in the tokens list", () => {
+    it("should return provided 'format' string", () => {
       expect(unitTestingTask("WWWW", dateToFormatMorning)).toEqual("WWWW");
     });
+  });
 
-    test("it should return last 2 digit of year", () => {
+  describe("when format was provided", () => {
+    it("should return last 2 digit of year", () => {
       expect(unitTestingTask("YY", dateToFormatMorning)).toEqual("22");
     });
 
-    test("it should return short name of month", () => {
+    it("should return short name of month", () => {
       expect(unitTestingTask("MMM", dateToFormatMorning)).toEqual("Aug");
     });
 
-    test("it should return number of month in year without zero-padding", () => {
+    it("should return number of month in year without zero-padding", () => {
       expect(unitTestingTask("M", dateToFormatMorning)).toEqual("8");
     });
 
-    test("it should return full name of day", () => {
+    it("should return full name of day", () => {
       expect(unitTestingTask("DDD", dateToFormatMorning)).toEqual("Monday");
     });
 
-    test("it should return short name of day", () => {
+    it("should return short name of day", () => {
       expect(unitTestingTask("DD", dateToFormatMorning)).toEqual("Mon");
     });
 
-    test("it should return min name of day", () => {
+    it("should return min name of day", () => {
       expect(unitTestingTask("D", dateToFormatMorning)).toEqual("Mo");
     });
 
-    test("it should return zero-padded hour in 24-hr format", () => {
+    it("should return zero-padded hour in 24-hr format", () => {
       expect(unitTestingTask("HH", dateToFormatMorning)).toEqual("09");
       expect(unitTestingTask("HH", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return hour in 24-hr format", () => {
+    it("should return hour in 24-hr format", () => {
       expect(unitTestingTask("H", dateToFormatMorning)).toEqual("9");
       expect(unitTestingTask("H", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return zero-padded hour in 12-hr format", () => {
+    it("should return zero-padded hour in 12-hr format", () => {
       expect(unitTestingTask("hh", dateToFormatMorning)).toEqual("09");
       expect(unitTestingTask("hh", dateToFormatEvening)).toEqual("07");
     });
 
-    test("it should return hour in 12-hr format", () => {
+    it("should return hour in 12-hr format", () => {
       expect(unitTestingTask("h", dateToFormatMorning)).toEqual("9");
       expect(unitTestingTask("h", dateToFormatEvening)).toEqual("7");
     });
 
-    test("it should return zero-padded minutes", () => {
+    it("should return zero-padded minutes", () => {
       expect(unitTestingTask("mm", dateToFormatMorning)).toEqual("09");
       expect(unitTestingTask("mm", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return minutes", () => {
+    it("should return minutes", () => {
       expect(unitTestingTask("m", dateToFormatMorning)).toEqual("9");
       expect(unitTestingTask("m", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return zero-padded seconds", () => {
+    it("should return zero-padded seconds", () => {
       expect(unitTestingTask("ss", dateToFormatMorning)).toEqual("09");
       expect(unitTestingTask("ss", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return seconds", () => {
+    it("should return seconds", () => {
       expect(unitTestingTask("s", dateToFormatMorning)).toEqual("9");
       expect(unitTestingTask("s", dateToFormatEvening)).toEqual("19");
     });
 
-    test("it should return zero-padded milliseconds", () => {
+    it("should return zero-padded milliseconds", () => {
       expect(unitTestingTask("ff", dateToFormatMorning)).toEqual("012");
       expect(unitTestingTask("ff", dateToFormatEvening)).toEqual("123");
     });
 
-    test("it should return milliseconds", () => {
+    it("should return milliseconds", () => {
       expect(unitTestingTask("f", dateToFormatMorning)).toEqual("12");
       expect(unitTestingTask("f", dateToFormatEvening)).toEqual("123");
     });
 
-    test("it should return AM in uppercase", () => {
+    it("should return AM in uppercase", () => {
       expect(unitTestingTask("A", dateToFormatMorning)).toEqual("AM");
     });
 
-    test("it should return am in lowercase", () => {
+    it("should return am in lowercase", () => {
       expect(unitTestingTask("a", dateToFormatMorning)).toEqual("am");
     });
 
-    test("it should return PM in uppercase", () => {
+    it("should return PM in uppercase", () => {
       expect(unitTestingTask("A", dateToFormatEvening)).toEqual("PM");
     });
 
-    test("it should return pm in lowercase", () => {
+    it("should return pm in lowercase", () => {
       expect(unitTestingTask("a", dateToFormatEvening)).toEqual("pm");
     });
 
-    test("it should return timezone in ISO8601-compatible basic format", () => {
+    it("should return timezone in ISO8601-compatible basic format", () => {
       expect(unitTestingTask("ZZ", dateToFormatMorning)).toEqual("+0200");
     });
 
-    test("it should return timezone in ISO8601-compatible extended format", () => {
+    it("should return timezone in ISO8601-compatible extended format", () => {
       expect(unitTestingTask("Z", dateToFormatMorning)).toEqual("+02:00");
     });
   });
 
-  describe("adding new language", () => {
+  describe("when provided date is a string", () => {
+    it("should return formatted date", () => {});
+  });
+
+  describe("when provided date is a number", () => {
+    it("should return formatted date", () => {});
+  });
+
+  describe("when provided date is a Date object", () => {
+    it("should return formatted date", () => {});
+  });
+
+  describe("when date is not provided", () => {
+    it("should return current formatted date", () => {});
+  });
+
+  describe("when date is a plain object", () => {
+    it("should throw an error", () => {
+      expect(() => unitTestingTask(format, {})).toThrow(Error);
+    });
+  });
+
+  describe("unitTestingTask.lang()", () => {
     beforeEach(() => {
       unitTestingTask._languages.current = "en";
     });
 
-    test("it should add Belarusian language with options", () => {
-      unitTestingTask.lang("belarusian", belarusianLang);
+    describe("when new language was provided with options", () => {
+      it("should add new language", () => {
+        unitTestingTask.lang("belarusian", belarusianLang);
 
-      expect(unitTestingTask._languages.belarusian).toBeTruthy();
-      expect(unitTestingTask._languages.current).toEqual("belarusian");
+        expect(unitTestingTask._languages.belarusian).toBeTruthy();
+        expect(unitTestingTask._languages.current).toEqual("belarusian");
+      });
     });
 
-    test("it should import new language without options if this file exists", () => {
-      unitTestingTask.lang("kk");
+    describe("when new language was provided without options", () => {
+      describe("when a file with new language has already existed", () => {
+        it("should import language from the file", () => {
+          unitTestingTask.lang("kk");
 
-      expect(unitTestingTask._languages.kk).toBeTruthy();
-      expect(unitTestingTask._languages.current).toEqual("kk");
-    });
+          expect(unitTestingTask._languages.current).toEqual("kk");
+        });
 
-    test("it should stay current language as previous if a new language imports without options and this file does not exist", () => {
-      unitTestingTask.lang("fr");
+        it("should change current language to the new language", () => {
+          unitTestingTask.lang("kk");
 
-      expect(unitTestingTask._languages.fr).toBeUndefined();
-      expect(unitTestingTask._languages.current).toEqual("en");
-    });
+          expect(unitTestingTask._languages.kk).toBeTruthy();
+        });
 
-    test("it should assign language to current if it has been declared", () => {
-      unitTestingTask.lang("ru");
-      unitTestingTask.lang("be");
-      unitTestingTask.lang("ru");
+        it("should assign language to current if it has been declared", () => {
+          unitTestingTask.lang("ru");
+          unitTestingTask.lang("be");
+          unitTestingTask.lang("ru");
 
-      expect(unitTestingTask._languages.current).toEqual("ru");
+          expect(unitTestingTask._languages.current).toEqual("ru");
+        });
+      });
+
+      describe("when a file with new language did not exist", () => {
+        it("should stay current language as previous", () => {
+          unitTestingTask.lang("fr");
+
+          expect(unitTestingTask._languages.current).toEqual("en");
+        });
+
+        it("should not add a new language to the list", () => {
+          unitTestingTask.lang("fr");
+          expect(unitTestingTask._languages.fr).toBeUndefined();
+        });
+      });
     });
   });
 
-  describe("format date according to Belarusian language", () => {
+  describe("when Belarusian language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("be");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("be")
       ).toBeTruthy();
@@ -222,28 +269,31 @@ describe("unit testing task", () => {
       ).toEqual("2022-жнівень(жні)-панядзелак 09:09:09:012 +0200");
     });
 
-    test("it should format date relate to meridiem: night", () => {
-      expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночы");
-    });
+    describe("when format contains meridiem", () => {
+      it("should return date relate to night", () => {
+        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночы");
+      });
 
-    test("it should format date relate to meridiem: morning", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("раніцы");
-    });
+      it("should return date relate to morning", () => {
+        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("раніцы");
+      });
 
-    test("it should format date relate to meridiem: afternoon", () => {
-      expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-    });
+      it("should return date relate to afternoon", () => {
+        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
+      });
 
-    test("it should format date relate to meridiem: evening", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечара");
+      it("should return date relate to evening", () => {
+        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечара");
+      });
     });
   });
+  ``;
 
-  describe("format date according to Czech language", () => {
+  describe("when Czech language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("cs");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("cs")
       ).toBeTruthy();
@@ -255,12 +305,14 @@ describe("unit testing task", () => {
       ).toEqual("2022-září(srp)-pondělí 09:09:09:012 +0200");
     });
 
-    test("it should format date relate to meridiem: morning", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("dopoledne");
-    });
+    describe("when format contains meridiem", () => {
+      it("should return date relate to morning", () => {
+        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("dopoledne");
+      });
 
-    test("it should format date relate to meridiem: evening", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("odpoledne");
+      it("should return date relate to evening", () => {
+        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("odpoledne");
+      });
     });
   });
 
@@ -268,7 +320,7 @@ describe("unit testing task", () => {
     beforeAll(() => {
       unitTestingTask.lang("kk");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("kk")
       ).toBeTruthy();
@@ -281,11 +333,11 @@ describe("unit testing task", () => {
     });
   });
 
-  describe("format date according to Polish language", () => {
+  describe("when Polish language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("pl");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("pl")
       ).toBeTruthy();
@@ -297,20 +349,22 @@ describe("unit testing task", () => {
       ).toEqual("2022-sierpeń(sie)-poniedziałek 09:09:09:012 +0200");
     });
 
-    test("it should format date relate to meridiem: morning", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("rano");
-    });
+    describe("when format contains meridiem", () => {
+      it("should return date relate to morning", () => {
+        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("rano");
+      });
 
-    test("it should format date relate to meridiem: evening", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("");
+      it("should return date relate to evening", () => {
+        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("");
+      });
     });
   });
 
-  describe("format date according to Russian language", () => {
+  describe("when Russian language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("ru");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("ru")
       ).toBeTruthy();
@@ -322,28 +376,30 @@ describe("unit testing task", () => {
       ).toEqual("2022-август(авг)-понедельник 09:09:09:012 +0200");
     });
 
-    test("it should format date relate to meridiem: night", () => {
-      expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночи");
-    });
+    describe("when format contains meridiem", () => {
+      it("should return date relate to night", () => {
+        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночи");
+      });
 
-    test("it should format date relate to meridiem: morning", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("утра");
-    });
+      it("should return date relate to morning", () => {
+        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("утра");
+      });
 
-    test("it should format date relate to meridiem: afternoon", () => {
-      expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-    });
+      it("should return date relate to afternoon", () => {
+        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
+      });
 
-    test("it should format date relate to meridiem: evening", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечера");
+      it("should return date relate to evening", () => {
+        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечера");
+      });
     });
   });
 
-  describe("format date according to Turkish language", () => {
+  describe("when Turkish language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("tr");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("tr")
       ).toBeTruthy();
@@ -356,11 +412,11 @@ describe("unit testing task", () => {
     });
   });
 
-  describe("format date according to Ukrainian language", () => {
+  describe("when Ukrainian language was provided", () => {
     beforeAll(() => {
       unitTestingTask.lang("uk");
     });
-    test("it should format date", () => {
+    it("should return date", () => {
       expect(
         Object.keys(unitTestingTask._languages).includes("uk")
       ).toBeTruthy();
@@ -372,20 +428,22 @@ describe("unit testing task", () => {
       ).toEqual("2022-серпень(серп)-понеділок 09:09:09:012 +0200");
     });
 
-    test("it should format date relate to meridiem: night", () => {
-      expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночі");
-    });
+    describe("when format contains meridiem", () => {
+      it("should return date relate to night", () => {
+        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночі");
+      });
 
-    test("it should format date relate to meridiem: morning", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("ранку");
-    });
+      it("should return date relate to morning", () => {
+        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("ранку");
+      });
 
-    test("it should format date relate to meridiem: afternoon", () => {
-      expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-    });
+      it("should return date relate to afternoon", () => {
+        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
+      });
 
-    test("it should format date relate to meridiem: evening", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечора");
+      it("should return date relate to evening", () => {
+        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечора");
+      });
     });
   });
 });
