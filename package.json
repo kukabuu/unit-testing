@@ -15,5 +15,9 @@
     "coverageReporters": [
       "html"
     ]
+  },
+  "dependencies": {
+    "jest-each": "^29.5.0",
+    "timezoned-date": "^3.0.2"
   }
 }

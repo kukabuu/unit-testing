@@ -1,3 +1,5 @@
+const timezonedDate = require("timezoned-date");
+
 const unitTestingTask = require("../unitTestingTask");
 
 // * a lack of coverage (can be checked by opening /coverage/index.html)
@@ -11,10 +13,10 @@ const unitTestingTask = require("../unitTestingTask");
 // https://markus.oberlehner.net/blog/naming-your-unit-tests-it-should-vs-given-when-then/
 
 describe("unitTestingTask()", () => {
-  const dateToFormatNight = "Mon Aug 15 2022 02:09:09:012 GMT+0200";
-  const dateToFormatMorning = "Mon Aug 15 2022 09:09:09:012 GMT+0200";
-  const dateToFormatAfternoon = "Mon Aug 15 2022 14:09:09:012 GMT+0200";
-  const dateToFormatEvening = "Mon Aug 15 2022 19:19:19:123 GMT+0200";
+  const dateToFormatNight = "Mon Aug 15 2022 02:09:09:012 GMT+0000";
+  const dateToFormatMorning = "Mon Aug 15 2022 09:09:09:012 GMT+0000";
+  const dateToFormatAfternoon = "Mon Aug 15 2022 14:09:09:012 GMT+0000";
+  const dateToFormatEvening = "Mon Aug 15 2022 19:19:19:123 GMT+0000";
   const formattedDate = "2022-08-15";
   const format = "YYYY-MM-dd";
   const belarusianLang = {
@@ -54,13 +56,17 @@ describe("unitTestingTask()", () => {
     },
   };
 
+  beforeEach(() => {
+    Date = timezonedDate.makeConstructor(0);
+  });
+
   it("should return formatted date when format and date were provided", () => {
     expect(unitTestingTask(format, dateToFormatMorning)).toBe(formattedDate);
   });
 
   describe("when format was not provided", () => {
     it("should throw an error", () => {
-      expect(() => unitTestingTask(_, dateToFormatMorning)).toThrow(Error);
+      expect(() => unitTestingTask(null, dateToFormatMorning)).toThrow(Error);
     });
   });
 
@@ -79,139 +85,87 @@ describe("unitTestingTask()", () => {
     });
   });
 
-  describe("when format was provided", () => {
-    it("should return last 2 digit of year", () => {
-      expect(unitTestingTask("YY", dateToFormatMorning)).toEqual("22");
-    });
-
-    it("should return short name of month", () => {
-      expect(unitTestingTask("MMM", dateToFormatMorning)).toEqual("Aug");
-    });
-
-    it("should return number of month in year without zero-padding", () => {
-      expect(unitTestingTask("M", dateToFormatMorning)).toEqual("8");
-    });
-
-    it("should return full name of day", () => {
-      expect(unitTestingTask("DDD", dateToFormatMorning)).toEqual("Monday");
-    });
-
-    it("should return short name of day", () => {
-      expect(unitTestingTask("DD", dateToFormatMorning)).toEqual("Mon");
-    });
-
-    it("should return min name of day", () => {
-      expect(unitTestingTask("D", dateToFormatMorning)).toEqual("Mo");
-    });
-
-    it("should return zero-padded hour in 24-hr format", () => {
-      expect(unitTestingTask("HH", dateToFormatMorning)).toEqual("09");
-      expect(unitTestingTask("HH", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return hour in 24-hr format", () => {
-      expect(unitTestingTask("H", dateToFormatMorning)).toEqual("9");
-      expect(unitTestingTask("H", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return zero-padded hour in 12-hr format", () => {
-      expect(unitTestingTask("hh", dateToFormatMorning)).toEqual("09");
-      expect(unitTestingTask("hh", dateToFormatEvening)).toEqual("07");
-    });
-
-    it("should return hour in 12-hr format", () => {
-      expect(unitTestingTask("h", dateToFormatMorning)).toEqual("9");
-      expect(unitTestingTask("h", dateToFormatEvening)).toEqual("7");
-    });
-
-    it("should return zero-padded minutes", () => {
-      expect(unitTestingTask("mm", dateToFormatMorning)).toEqual("09");
-      expect(unitTestingTask("mm", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return minutes", () => {
-      expect(unitTestingTask("m", dateToFormatMorning)).toEqual("9");
-      expect(unitTestingTask("m", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return zero-padded seconds", () => {
-      expect(unitTestingTask("ss", dateToFormatMorning)).toEqual("09");
-      expect(unitTestingTask("ss", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return seconds", () => {
-      expect(unitTestingTask("s", dateToFormatMorning)).toEqual("9");
-      expect(unitTestingTask("s", dateToFormatEvening)).toEqual("19");
-    });
-
-    it("should return zero-padded milliseconds", () => {
-      expect(unitTestingTask("ff", dateToFormatMorning)).toEqual("012");
-      expect(unitTestingTask("ff", dateToFormatEvening)).toEqual("123");
-    });
-
-    it("should return milliseconds", () => {
-      expect(unitTestingTask("f", dateToFormatMorning)).toEqual("12");
-      expect(unitTestingTask("f", dateToFormatEvening)).toEqual("123");
-    });
-
-    it("should return AM in uppercase", () => {
-      expect(unitTestingTask("A", dateToFormatMorning)).toEqual("AM");
-    });
-
-    it("should return am in lowercase", () => {
-      expect(unitTestingTask("a", dateToFormatMorning)).toEqual("am");
-    });
-
-    it("should return PM in uppercase", () => {
-      expect(unitTestingTask("A", dateToFormatEvening)).toEqual("PM");
-    });
-
-    it("should return pm in lowercase", () => {
-      expect(unitTestingTask("a", dateToFormatEvening)).toEqual("pm");
-    });
-
-    it("should return timezone in ISO8601-compatible basic format", () => {
-      expect(unitTestingTask("ZZ", dateToFormatMorning)).toEqual("+0200");
-    });
-
-    it("should return timezone in ISO8601-compatible extended format", () => {
-      expect(unitTestingTask("Z", dateToFormatMorning)).toEqual("+02:00");
-    });
-  });
-
-  describe("when provided date is a string", () => {
-    it("should return formatted date", () => {});
-  });
-
-  describe("when provided date is a number", () => {
-    it("should return formatted date", () => {});
-  });
-
-  describe("when provided date is a Date object", () => {
-    it("should return formatted date", () => {});
-  });
-
-  describe("when date is not provided", () => {
-    it("should return current formatted date", () => {});
-  });
-
   describe("when date is a plain object", () => {
     it("should throw an error", () => {
       expect(() => unitTestingTask(format, {})).toThrow(Error);
     });
   });
 
+  describe("unitTestingTask.formatters", () => {
+    it("should return a list of availiable formaters", () => {
+      const formatName = "ISO_Date";
+      const format = "YYYY-MM-dd";
+
+      unitTestingTask.register(formatName, format);
+
+      const formatters = unitTestingTask.formatters();
+
+      expect(formatters).toContain(formatName);
+    });
+  });
+
+  describe.each`
+    token     | date                   | expected
+    ${"YYYY"} | ${dateToFormatMorning} | ${"2022"}
+    ${"YY"}   | ${dateToFormatMorning} | ${"22"}
+    ${"MMMM"} | ${dateToFormatMorning} | ${"August"}
+    ${"MMM"}  | ${dateToFormatMorning} | ${"Aug"}
+    ${"MM"}   | ${dateToFormatMorning} | ${"08"}
+    ${"M"}    | ${dateToFormatMorning} | ${"8"}
+    ${"DDD"}  | ${dateToFormatMorning} | ${"Monday"}
+    ${"DD"}   | ${dateToFormatMorning} | ${"Mon"}
+    ${"D"}    | ${dateToFormatMorning} | ${"Mo"}
+    ${"dd"}   | ${dateToFormatMorning} | ${"15"}
+    ${"d"}    | ${dateToFormatMorning} | ${"15"}
+    ${"HH"}   | ${dateToFormatMorning} | ${"09"}
+    ${"HH"}   | ${dateToFormatEvening} | ${"19"}
+    ${"H"}    | ${dateToFormatMorning} | ${"9"}
+    ${"H"}    | ${dateToFormatEvening} | ${"19"}
+    ${"hh"}   | ${dateToFormatMorning} | ${"09"}
+    ${"hh"}   | ${dateToFormatEvening} | ${"07"}
+    ${"h"}    | ${dateToFormatMorning} | ${"9"}
+    ${"h"}    | ${dateToFormatEvening} | ${"7"}
+    ${"mm"}   | ${dateToFormatMorning} | ${"09"}
+    ${"mm"}   | ${dateToFormatEvening} | ${"19"}
+    ${"m"}    | ${dateToFormatMorning} | ${"9"}
+    ${"m"}    | ${dateToFormatEvening} | ${"19"}
+    ${"ss"}   | ${dateToFormatMorning} | ${"09"}
+    ${"ss"}   | ${dateToFormatEvening} | ${"19"}
+    ${"s"}    | ${dateToFormatMorning} | ${"9"}
+    ${"s"}    | ${dateToFormatEvening} | ${"19"}
+    ${"ff"}   | ${dateToFormatMorning} | ${"012"}
+    ${"ff"}   | ${dateToFormatEvening} | ${"123"}
+    ${"f"}    | ${dateToFormatMorning} | ${"12"}
+    ${"f"}    | ${dateToFormatEvening} | ${"123"}
+    ${"A"}    | ${dateToFormatMorning} | ${"AM"}
+    ${"A"}    | ${dateToFormatEvening} | ${"PM"}
+    ${"a"}    | ${dateToFormatMorning} | ${"am"}
+    ${"a"}    | ${dateToFormatEvening} | ${"pm"}
+    ${"ZZ"}   | ${dateToFormatMorning} | ${"+0000"}
+    ${"Z"}    | ${dateToFormatMorning} | ${"+00:00"}
+  `("when format was provided", ({ token, expected, date }) => {
+    it(`returns ${expected} when format string is ${token}`, () => {
+      expect(unitTestingTask(token, date)).toBe(expected);
+    });
+  });
+
   describe("unitTestingTask.lang()", () => {
     beforeEach(() => {
-      unitTestingTask._languages.current = "en";
+      unitTestingTask.lang("en");
+      console.log(
+        `after assuming en: ${JSON.stringify(unitTestingTask._languages)}`
+      );
+    });
+
+    afterEach(() => {
+      unitTestingTask._languages = {};
     });
 
     describe("when new language was provided with options", () => {
       it("should add new language", () => {
         unitTestingTask.lang("belarusian", belarusianLang);
 
-        expect(unitTestingTask._languages.belarusian).toBeTruthy();
-        expect(unitTestingTask._languages.current).toEqual("belarusian");
+        expect(unitTestingTask.lang()).toEqual("belarusian");
       });
     });
 
@@ -220,13 +174,7 @@ describe("unitTestingTask()", () => {
         it("should import language from the file", () => {
           unitTestingTask.lang("kk");
 
-          expect(unitTestingTask._languages.current).toEqual("kk");
-        });
-
-        it("should change current language to the new language", () => {
-          unitTestingTask.lang("kk");
-
-          expect(unitTestingTask._languages.kk).toBeTruthy();
+          expect(unitTestingTask.lang()).toEqual("kk");
         });
 
         it("should assign language to current if it has been declared", () => {
@@ -234,216 +182,84 @@ describe("unitTestingTask()", () => {
           unitTestingTask.lang("be");
           unitTestingTask.lang("ru");
 
-          expect(unitTestingTask._languages.current).toEqual("ru");
+          expect(unitTestingTask.lang()).toEqual("ru");
         });
       });
 
       describe("when a file with new language did not exist", () => {
         it("should stay current language as previous", () => {
-          unitTestingTask.lang("fr");
+          unitTestingTask.lang("fake");
 
-          expect(unitTestingTask._languages.current).toEqual("en");
-        });
-
-        it("should not add a new language to the list", () => {
-          unitTestingTask.lang("fr");
-          expect(unitTestingTask._languages.fr).toBeUndefined();
+          expect(unitTestingTask.lang()).toEqual("en");
         });
       });
     });
   });
 
-  describe("when Belarusian language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("be");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("be")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-жнівень(жні)-панядзелак 09:09:09:012 +0200");
-    });
+  describe.each`
+    language        | languageCode | night          | morning        | afternoon      | evening        | formattedDate
+    ${"Belarusian"} | ${"be"}      | ${"ночы"}      | ${"раніцы"}    | ${"дня"}       | ${"вечара"}    | ${"2022-жнівень(жні)-панядзелак 09:09:09:012 +0000"}
+    ${"Czech"}      | ${"cs"}      | ${"dopoledne"} | ${"dopoledne"} | ${"odpoledne"} | ${"odpoledne"} | ${"2022-září(srp)-pondělí 09:09:09:012 +0000"}
+    ${"Kazakh"}     | ${"kk"}      | ${""}          | ${""}          | ${""}          | ${""}          | ${"2022-тамыз(там)-дүйсенбі 09:09:09:012 +0000"}
+    ${"Polish"}     | ${"pl"}      | ${"rano"}      | ${"rano"}      | ${""}          | ${""}          | ${"2022-sierpeń(sie)-poniedziałek 09:09:09:012 +0000"}
+    ${"Russian"}    | ${"ru"}      | ${"ночи"}      | ${"утра"}      | ${"дня"}       | ${"вечера"}    | ${"2022-август(авг)-понедельник 09:09:09:012 +0000"}
+    ${"Turkish"}    | ${"tr"}      | ${""}          | ${""}          | ${""}          | ${""}          | ${"2022-Ağustos(Ağu)-Pazartesi 09:09:09:012 +0000"}
+    ${"Ukrainian"}  | ${"uk"}      | ${"ночі"}      | ${"ранку"}     | ${"дня"}       | ${"вечора"}    | ${"2022-серпень(серп)-понеділок 09:09:09:012 +0000"}
+  `(
+    "when language was provided",
+    ({
+      language,
+      languageCode,
+      night,
+      morning,
+      afternoon,
+      evening,
+      formattedDate,
+    }) => {
+      describe(`${language}:`, () => {
+        beforeAll(() => {
+          unitTestingTask.lang(languageCode);
+        });
 
-    describe("when format contains meridiem", () => {
-      it("should return date relate to night", () => {
-        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночы");
+        afterEach(() => {
+          unitTestingTask._languages = {};
+        });
+
+        it("should return formatted date", () => {
+          expect(
+            unitTestingTask(
+              "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
+              dateToFormatMorning
+            )
+          ).toEqual(formattedDate);
+        });
+
+        if (night || morning || afternoon || evening) {
+          describe("when format contains meridiem", () => {
+            it("should return date relate to night", () => {
+              expect(unitTestingTask("A", dateToFormatNight)).toEqual(night);
+            });
+
+            it("should return date relate to morning", () => {
+              expect(unitTestingTask("A", dateToFormatMorning)).toEqual(
+                morning
+              );
+            });
+
+            it("should return date relate to afternoon", () => {
+              expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual(
+                afternoon
+              );
+            });
+
+            it("should return date relate to evening", () => {
+              expect(unitTestingTask("A", dateToFormatEvening)).toEqual(
+                evening
+              );
+            });
+          });
+        }
       });
-
-      it("should return date relate to morning", () => {
-        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("раніцы");
-      });
-
-      it("should return date relate to afternoon", () => {
-        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-      });
-
-      it("should return date relate to evening", () => {
-        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечара");
-      });
-    });
-  });
-  ``;
-
-  describe("when Czech language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("cs");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("cs")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-září(srp)-pondělí 09:09:09:012 +0200");
-    });
-
-    describe("when format contains meridiem", () => {
-      it("should return date relate to morning", () => {
-        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("dopoledne");
-      });
-
-      it("should return date relate to evening", () => {
-        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("odpoledne");
-      });
-    });
-  });
-
-  describe("format date according to Kazakh language", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("kk");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("kk")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-тамыз(там)-дүйсенбі 09:09:09:012 +0200");
-    });
-  });
-
-  describe("when Polish language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("pl");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("pl")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-sierpeń(sie)-poniedziałek 09:09:09:012 +0200");
-    });
-
-    describe("when format contains meridiem", () => {
-      it("should return date relate to morning", () => {
-        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("rano");
-      });
-
-      it("should return date relate to evening", () => {
-        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("");
-      });
-    });
-  });
-
-  describe("when Russian language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("ru");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("ru")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-август(авг)-понедельник 09:09:09:012 +0200");
-    });
-
-    describe("when format contains meridiem", () => {
-      it("should return date relate to night", () => {
-        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночи");
-      });
-
-      it("should return date relate to morning", () => {
-        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("утра");
-      });
-
-      it("should return date relate to afternoon", () => {
-        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-      });
-
-      it("should return date relate to evening", () => {
-        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечера");
-      });
-    });
-  });
-
-  describe("when Turkish language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("tr");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("tr")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-Ağustos(Ağu)-Pazartesi 09:09:09:012 +0200");
-    });
-  });
-
-  describe("when Ukrainian language was provided", () => {
-    beforeAll(() => {
-      unitTestingTask.lang("uk");
-    });
-    it("should return date", () => {
-      expect(
-        Object.keys(unitTestingTask._languages).includes("uk")
-      ).toBeTruthy();
-      expect(
-        unitTestingTask(
-          "YYYY-MMMM(MMM)-DDD HH:mm:ss:ff ZZ",
-          dateToFormatMorning
-        )
-      ).toEqual("2022-серпень(серп)-понеділок 09:09:09:012 +0200");
-    });
-
-    describe("when format contains meridiem", () => {
-      it("should return date relate to night", () => {
-        expect(unitTestingTask("A", dateToFormatNight)).toEqual("ночі");
-      });
-
-      it("should return date relate to morning", () => {
-        expect(unitTestingTask("A", dateToFormatMorning)).toEqual("ранку");
-      });
-
-      it("should return date relate to afternoon", () => {
-        expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual("дня");
-      });
-
-      it("should return date relate to evening", () => {
-        expect(unitTestingTask("A", dateToFormatEvening)).toEqual("вечора");
-      });
-    });
-  });
+    }
+  );
 });
