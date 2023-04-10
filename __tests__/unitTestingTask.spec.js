@@ -1,15 +1,7 @@
 const timezonedDate = require("timezoned-date");
 
-const unitTestingTask = require("../unitTestingTask");
-
-// * a lack of coverage (can be checked by opening /coverage/index.html)
-// * failing tests when a different time zone is set on your computer.
-// * Try to use one "expect" per test.
-// * Test naming is usually an area to improve.
-//
 // Here you can find good naming examples using the "should" convention.
 // https://github.com/mawrkus/js-unit-testing-guide
-// You can also find "Given/When/Then" namings on your projects and if so you should be consistent with test names.
 // https://markus.oberlehner.net/blog/naming-your-unit-tests-it-should-vs-given-when-then/
 
 describe("unitTestingTask()", () => {
@@ -19,9 +11,15 @@ describe("unitTestingTask()", () => {
   const dateToFormatEvening = "Mon Aug 15 2022 19:19:19:123 GMT+0000";
   const formattedDate = "2022-08-15";
   const format = "YYYY-MM-dd";
+  let unitTestingTask;
 
   beforeEach(() => {
     Date = timezonedDate.makeConstructor(0);
+    unitTestingTask = require("../unitTestingTask");
+  });
+
+  afterEach(() => {
+    jest.resetModules();
   });
 
   it("should return formatted date when format and date were provided", () => {
@@ -108,7 +106,7 @@ describe("unitTestingTask()", () => {
     ${"ZZ"}   | ${dateToFormatMorning} | ${"+0000"}
     ${"Z"}    | ${dateToFormatMorning} | ${"+00:00"}
   `("when format was provided", ({ token, expected, date }) => {
-    it(`returns ${expected} when format string is ${token}`, () => {
+    it(`returns ${expected} when format string is ${token} and date is '${date}'`, () => {
       expect(unitTestingTask(token, date)).toBe(expected);
     });
   });
@@ -116,10 +114,6 @@ describe("unitTestingTask()", () => {
   describe("unitTestingTask.lang()", () => {
     beforeEach(() => {
       unitTestingTask.lang("en");
-    });
-
-    afterEach(() => {
-      unitTestingTask._languages = {};
     });
 
     describe("when new language was provided with options", () => {
@@ -214,12 +208,8 @@ describe("unitTestingTask()", () => {
       formattedDate,
     }) => {
       describe(`${language}:`, () => {
-        beforeAll(() => {
+        beforeEach(() => {
           unitTestingTask.lang(languageCode);
-        });
-
-        afterEach(() => {
-          unitTestingTask._languages = {};
         });
 
         it("should return formatted date", () => {
@@ -230,32 +220,42 @@ describe("unitTestingTask()", () => {
             )
           ).toEqual(formattedDate);
         });
+      });
+    }
+  );
 
-        if (night || morning || afternoon || evening) {
-          describe("when format contains meridiem", () => {
-            it("should return date relate to night", () => {
-              expect(unitTestingTask("A", dateToFormatNight)).toEqual(night);
-            });
+  describe.each`
+    language        | languageCode | night          | morning        | afternoon      | evening        | formattedDate
+    ${"Belarusian"} | ${"be"}      | ${"ночы"}      | ${"раніцы"}    | ${"дня"}       | ${"вечара"}    | ${"2022-жнівень(жні)-панядзелак 09:09:09:012 +0000"}
+    ${"Czech"}      | ${"cs"}      | ${"dopoledne"} | ${"dopoledne"} | ${"odpoledne"} | ${"odpoledne"} | ${"2022-září(srp)-pondělí 09:09:09:012 +0000"}
+    ${"Polish"}     | ${"pl"}      | ${"rano"}      | ${"rano"}      | ${""}          | ${""}          | ${"2022-sierpeń(sie)-poniedziałek 09:09:09:012 +0000"}
+    ${"Russian"}    | ${"ru"}      | ${"ночи"}      | ${"утра"}      | ${"дня"}       | ${"вечера"}    | ${"2022-август(авг)-понедельник 09:09:09:012 +0000"}
+    ${"Ukrainian"}  | ${"uk"}      | ${"ночі"}      | ${"ранку"}     | ${"дня"}       | ${"вечора"}    | ${"2022-серпень(серп)-понеділок 09:09:09:012 +0000"}
+  `(
+    "when language was provided with meridiem",
+    ({ language, languageCode, night, morning, afternoon, evening }) => {
+      describe(`${language}:`, () => {
+        beforeEach(() => {
+          unitTestingTask.lang(languageCode);
+        });
 
-            it("should return date relate to morning", () => {
-              expect(unitTestingTask("A", dateToFormatMorning)).toEqual(
-                morning
-              );
-            });
+        it("should return date relate to the night", () => {
+          expect(unitTestingTask("A", dateToFormatNight)).toEqual(night);
+        });
 
-            it("should return date relate to afternoon", () => {
-              expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual(
-                afternoon
-              );
-            });
+        it("should return date relate to the morning", () => {
+          expect(unitTestingTask("A", dateToFormatMorning)).toEqual(morning);
+        });
 
-            it("should return date relate to evening", () => {
-              expect(unitTestingTask("A", dateToFormatEvening)).toEqual(
-                evening
-              );
-            });
-          });
-        }
+        it("should return date relate to the afternoon", () => {
+          expect(unitTestingTask("A", dateToFormatAfternoon)).toEqual(
+            afternoon
+          );
+        });
+
+        it("should return date relate to the evening", () => {
+          expect(unitTestingTask("A", dateToFormatEvening)).toEqual(evening);
+        });
       });
     }
   );
